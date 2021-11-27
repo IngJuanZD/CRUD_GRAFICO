@@ -11,10 +11,12 @@ import shutil
 from git.objects import commit
 
 ######Repara el uso inadecuado de varibles globales
+#Error si no setiene el contenido de DCWA hay que bloquear repoL por que no funciona.
+#Fallo cuando actualizo repocitorio
 local_repo_directory = os.path.join(os.getcwd(), 'DCWA')
 destination = 'master'
 productos_dicc = {}
-#repoL = Repo(local_repo_directory)
+repoL = Repo(local_repo_directory)
 
 # Generar a "producto_dicc"
 archivo = "./logo1.png"

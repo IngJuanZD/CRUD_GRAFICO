@@ -16,7 +16,6 @@ from git.objects import commit
 local_repo_directory = os.path.join(os.getcwd(), 'DCWA')
 destination = 'master'
 productos_dicc = {}
-repoL = Repo(local_repo_directory)
 
 # Generar a "producto_dicc"
 archivo = "./logo1.png"
@@ -39,17 +38,17 @@ def loadProductos():
 
 
 def sincronizar():
+    global local_repo_directory
     print("Dentro de Sincronizar")
     if os.path.exists(local_repo_directory):
-        print("Directorio existente, bajando cambios desde la rama " + destination)
-        global repoL
+        print("Directorio existente, bajando cambios desde la rama " + destination)        
         repoL = Repo(local_repo_directory)
         origin = repoL.remotes.origin
         origin.pull(destination)
     else:
         print("Directorio no existente, clonado repositorio ")
 #REMPLAZAR DATOS        
-        Repo.clone_from("URL DEL REPOSITORIO GITHUB",
+        Repo.clone_from("https://github.com/IngJuanZD/DCWA.git",
                         local_repo_directory, branch=destination)
     print("Clonado listo")
     loadProductos()
@@ -141,18 +140,24 @@ def nuevo():
     id_entry.config(state="readonly")
     codigo_entry.config(state="readonly")
     # Funcion agregar nueva imagen
-    global imgNueva360
-    global imgNuevaPorta
-    global idNueva
-    idNueva = ID+1
-    imgNueva360 = filedialog.askopenfilename(filetypes=[("360", '.gif')])
-    imgNuevaPorta = filedialog.askopenfilename(filetypes=[("Portada", '.png')])
+    # global imgNueva360
+    # global imgNuevaPorta
+    # global idNueva
+    # idNueva = ID+1
+    # imgNueva360 = filedialog.askopenfilename(filetypes=[("360", '.gif')])
+    # imgNuevaPorta = filedialog.askopenfilename(filetypes=[("Portada", '.png')])
     productos_dicc.insert(ID, NuevoPro)  # Agregar el nuevo producto
     # Bloque id y codigo generados automaticos    
-    foto360_entry.insert(0, f"img/Productos/DCW{ID+2}.gif")
-    fotoporta_entry.insert(0, f"img/Productos/DCW{ID+2}.png")
-    foto360_entry.config(state="readonly")
-    fotoporta_entry.config(state="readonly")
+    # foto360_entry.insert(0, f"img/Productos/DCW{ID+2}.gif")
+    # fotoporta_entry.insert(0, f"img/Productos/DCW{ID+2}.png")
+    # foto360_entry.config(state="readonly")
+    # fotoporta_entry.config(state="readonly")
+    global updateimg_btn_portada
+    global updateimg_btn_360
+    updateimg_btn_360 = Button(vp, text="Cambiar Fotos 360", command=foto360_update)
+    updateimg_btn_360.grid(column=2, row=5, pady=5, columnspan=2, sticky="ew")
+    updateimg_btn_portada = Button(vp, text="Cambiar Fotos Portada", command=portada_update)
+    updateimg_btn_portada.grid(column=5, row=5, pady=5, columnspan=2, sticky="ew")
     productos_dicc[ID][datos[0]] = txtcodigo.get()
     productos_dicc[ID][datos[6]] = f"{ID}"
     
@@ -210,7 +215,7 @@ def portada_update():
 def tomardatos():
     print("Dentro de Guardar")    
     # Imagenes
-    global imgNueva360, imgNuevaPorta, idNueva, btauxG, btauxP, local_repo_directory, repoL
+    global imgNueva360, imgNuevaPorta, idNueva, btauxG, btauxP, local_repo_directory
     idNueva = txtid.get() + 1
     if btauxG == 1:
         dirimg360 = f"./DCWA/img/Productos/DCW{idNueva}.gif"
@@ -287,7 +292,8 @@ def guardar():
 def botonconfir():
     print("Commint confirmado....")
     tomardatos()
-    global repoL
+    global local_repo_directory
+    repoL = Repo(local_repo_directory)
     repoL.git.add(update=True)    
     repoL.git.commit("-m", f"Actualizando: ID {txtid.get()}, {Txt_entry.get()}")        
     app.deiconify() 
@@ -306,19 +312,19 @@ def botoncancelar():
     
 
 # Funcion para el push a github
-def publicar():
-    # message forma de agregar concatenar el contenidod e variable
-    public = messagebox.askyesno(message=f" Deseas actualizar la página.", title="Actualización")
-    if public == True:        
-        guardar()
-        global repoL        
-        repoL.git.push("--set-upstream", 'origin', destination)                              
-        messagebox.showinfo(message="Datos actualizado en decorationcw.com.mx", title="Estado de actualización")        
-        limpiar()
-    else:
-        messagebox.showwarning(message="Actualizacíon cancelada", title="Estado de actualización")        
-        print("Actualización Cancelada")
-        limpiar()
+# def publicar():
+#     # message forma de agregar concatenar el contenidod e variable
+#     public = messagebox.askyesno(message=f" Deseas actualizar la página.", title="Actualización")
+#     if public == True:        
+#         guardar()
+#         global repoL        
+#         repoL.git.push("--set-upstream", 'origin', destination)                              
+#         messagebox.showinfo(message="Datos actualizado en decorationcw.com.mx", title="Estado de actualización")        
+#         limpiar()
+#     else:
+#         messagebox.showwarning(message="Actualizacíon cancelada", title="Estado de actualización")        
+#         print("Actualización Cancelada")
+#         limpiar()
 
 
     
@@ -544,7 +550,7 @@ precioPromo_entry.grid(column=6, row=9, pady=5, sticky="ew")
 urlComp_entry.grid(column=2, row=10, pady=5, columnspan=5, sticky="ew")
 
 # BOTONES
-sic_btn = Button(vp, text="Sincronizar", command=sincronizar, bg="#3EB595")
+sic_btn = Button(vp, text="Descarga", command=sincronizar, bg="#3EB595")
 sic_btn.grid(column=1, row=1,)
 buscar_btn = Button(vp, text="Buscar", command=buscar, bg="#F2C53D")
 buscar_btn.grid(column=2, row=1)
@@ -554,17 +560,16 @@ modificar_btn = Button(vp, text="Modificar", command=modificar, bg="#F29F05")
 modificar_btn.grid(column=4, row=1)
 guardar_btn = Button(vp, text="Guardar", command=guardar, bg="#A6BF4B")
 guardar_btn.grid(column=5, row=1)
-publicar_btn = Button(vp, text="Publicar", command=publicar, bg="#668C4A")
-publicar_btn.grid(column=6, row=1)
+#publicar_btn = Button(vp, text="Publicar", command=publicar, bg="#668C4A")
+#publicar_btn.grid(column=6, row=1)
 borrar_btn = Button(vp, text="Borrar", command=borrar, bg="#812F33")
-borrar_btn.grid(column=7, row=1)
-limpiar_btn = Button(vp, text="Limpiar", command=limpiar)
-limpiar_btn.grid(column=8, row=1, padx=(150, 0))
+borrar_btn.grid(column=6, row=1)
+limpiar_btn = Button(vp, text="Limpiar", command=limpiar, bg="#8C0082")
+limpiar_btn.grid(column=7, row=1)
 updateimg_btn_360 = Button(vp, text="Cambiar Fotos 360", command=foto360_update)    
 updateimg_btn_360.grid(column=2, row=11)
 updateimg_btn_portada = Button(vp, text="Cambiar Fotos Portada", command=portada_update)    
 updateimg_btn_portada.grid(column=3, row=11)
 limpiar()
-
 
 app.mainloop()
